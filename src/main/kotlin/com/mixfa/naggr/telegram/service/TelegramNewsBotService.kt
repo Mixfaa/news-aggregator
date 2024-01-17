@@ -27,7 +27,6 @@ class TelegramNewsBotService(
     @Value("\${telegrambot.username}") private val username: String,
     @Value("\${telegrambot.token}") private val token: String
 ) : TelegramLongPollingBot(token) {
-    private val logger = LoggerFactory.getLogger(this::class.java)
     private lateinit var eventHandlers: List<EventHandler<Update>>
 
     private fun handleReceiveNewsCmd(upd: Update) {

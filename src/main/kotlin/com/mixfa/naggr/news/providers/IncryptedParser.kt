@@ -16,7 +16,7 @@ class IncryptedParser : NewsProvider {
         while (!it.isCancelled) {
             val news = parseNews() ?: continue
             it.next(news)
-            Thread.sleep(Duration.ofSeconds(60))
+            Thread.sleep(Duration.ofMinutes(5))
         }
     }
 
@@ -48,10 +48,6 @@ class IncryptedParser : NewsProvider {
     }
 
     fun parseNews(): News? {
-        return News(
-            "test link", "test title", "https://incrypted.com/wp-content/uploads/2023/07/haker-s-380x235.jpg",
-            mapOf("image" to "https://discord4j.com/jetbrains.svg")
-        )
         return try {
             val document = Jsoup.connect("https://incrypted.com/news/?order_by=new").get() ?: return null
 
@@ -67,8 +63,7 @@ class IncryptedParser : NewsProvider {
 
             if (lastParsedNews?.title.contentEquals(title)) return null
 
-            val refEl = titleDiv.selectFirst("[href]") ?: return null
-            val link = refEl.attr("href")
+            val link = titleDiv.selectFirst("[href]")?.attr("href") ?: return null
 
             val descriptionDiv = postArticle.selectFirst("div.incr_loop-deskr") ?: return null
 
@@ -81,7 +76,7 @@ class IncryptedParser : NewsProvider {
                 }
             }
 
-            lastParsedNews = News(link, title, imageRef,additionalInfo)
+            lastParsedNews = News(link, title, imageRef, additionalInfo)
             lastParsedNews
         } catch (ex: Exception) {
             println(ex)

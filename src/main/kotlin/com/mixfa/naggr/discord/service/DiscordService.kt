@@ -6,13 +6,12 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import net.dv8tion.jda.api.utils.FileUpload
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import ua.helpme.naggr.discord.model.DiscordNewsSubscriber
-import ua.helpme.naggr.news.service.NewsService
 import ua.helpme.naggr.news.model.News
+import ua.helpme.naggr.news.service.NewsService
 import ua.helpme.naggr.shared.DiscordEventPredicates
 import ua.helpme.naggr.shared.EventHandler
 import ua.helpme.naggr.shared.handleEvent
@@ -25,7 +24,6 @@ class DiscordService(
     private val discordSubscribersRepository: DiscordSubscribersRepository,
     private val newsService: NewsService
 ) : ListenerAdapter() {
-    private val logger = LoggerFactory.getLogger(this::class.java)
     private lateinit var commandHandlers: List<EventHandler<SlashCommandInteractionEvent>>
 
     @PostConstruct
