@@ -1,11 +1,12 @@
-package ua.helpme.naggr.news.providers
+package com.mixfa.naggr.news.providers
 
 
+import com.mixfa.naggr.news.model.Flag
+import com.mixfa.naggr.news.model.News
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import ua.helpme.naggr.news.model.News
 import java.time.Duration
 
 @Component
@@ -76,7 +77,7 @@ class IncryptedParser : NewsProvider {
                 }
             }
 
-            lastParsedNews = News(link, title, imageRef, additionalInfo)
+            lastParsedNews = News(link, title, imageRef, additionalInfo, listOf(Flag.CRYPTO))
             lastParsedNews
         } catch (ex: Exception) {
             println(ex)

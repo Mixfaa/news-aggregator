@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Aggregator command line</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #282c34;
+            color: #61dafb;
+        }
+
+        .terminal {
+            width: 80%;
+            max-width: 600px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-line {
+            display: flex;
+        }
+
+        .prompt {
+            color: #00ff00;
+            margin-right: 5px;
+        }
+
+        #commandInput {
+            background-color: transparent;
+            border: none;
+            color: #61dafb;
+            font-family: 'Courier New', monospace;
+            outline: none;
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="terminal" id="terminal">
+        <div class="output" id="output"></div>
+        <div class="input-line">
+            <span class="prompt">$</span>
+            <input type="text" id="commandInput" autofocus>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+       /*<![CDATA[*/
+  
+    var identifier = /*[[${identifier}]]*/ 'identifier';
+ 
+/*]]>*/
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const terminal = document.getElementById('terminal');
+            const output = document.getElementById('output');
+            const commandInput = document.getElementById('commandInput');
+
+            commandInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    const command = commandInput.value;
+                    executeCommand(command);
+                    commandInput.value = '';
+                }
+            });
+
+            function executeCommand(command) {
+                // Send the command to the server (you need to implement server-side logic)
+                // For now, just echo the command in the output
+                const outputText = `<div>$ ${command}</div>`;
+                output.innerHTML += outputText;
+
+                // You can also make an AJAX request to the server for command execution
+                sendCommandToServer(command);
+            }
+
+            // Function to send the command to the server
+            function sendCommandToServer(command) {
+                fetch("/cli/handle",
+                    {
+                        method: "POST",
+                        body: JSON.stringify({
+                            "command": command,
+                            "identifier": identifier
+                        }),
+                        headers: new Headers({'content-type': 'application/json'}),
+                    })
+                    .then(response => {
+                        response.text().then(text => {
+                            const outputText = `<div>Server: ${text}</div>`;
+                            output.innerHTML += outputText;
+                        })
+                    })
+            }
+        });
+    </script>
+</body>
+
+</html>

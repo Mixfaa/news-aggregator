@@ -1,7 +1,13 @@
-package ua.helpme.naggr.discord.service
+package com.mixfa.naggr.discord.service
 
-import jakarta.annotation.PostConstruct
+import com.mixfa.naggr.discord.model.DiscordNewsSubscriber
+import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.news.service.NewsService
+import com.mixfa.naggr.shared.InputHandler
+import com.mixfa.naggr.shared.LambdaInputHandler
+import com.mixfa.naggr.shared.handle
 import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
@@ -9,25 +15,25 @@ import net.dv8tion.jda.api.utils.FileUpload
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
-import ua.helpme.naggr.discord.model.DiscordNewsSubscriber
-import ua.helpme.naggr.news.model.News
-import ua.helpme.naggr.news.service.NewsService
-import ua.helpme.naggr.shared.DiscordEventPredicates
-import ua.helpme.naggr.shared.EventHandler
-import ua.helpme.naggr.shared.handleEvent
 import java.net.URI
 
+private object DiscordEventPredicates {
+    fun byFullCommandName(targetName: String): (GenericCommandInteractionEvent) -> Boolean {
+        return func@{ event ->
+            return@func targetName.contentEquals(event.fullCommandName)
+        }
+    }
+}
 
 @Service
-class DiscordService(
+final class DiscordService(
     private val discordBot: JDA,
     private val discordSubscribersRepository: DiscordSubscribersRepository,
     private val newsService: NewsService
 ) : ListenerAdapter() {
-    private lateinit var commandHandlers: List<EventHandler<SlashCommandInteractionEvent>>
+    private val commandHandlers: List<InputHandler<SlashCommandInteractionEvent, Unit>>
 
-    @PostConstruct
-    fun initialize() {
+    init {
         discordBot.updateCommands()
             .addCommands(
                 Commands.slash("receive_news", "Receive news in this channel")
@@ -38,7 +44,7 @@ class DiscordService(
         discordBot.addEventListener(this)
 
         commandHandlers = listOf(
-            EventHandler(DiscordEventPredicates.byFullCommandName("receive_news"), this::handleReceiveNewsCmd)
+            LambdaInputHandler(DiscordEventPredicates.byFullCommandName("receive_news"), this::handleReceiveNewsCmd)
         )
         newsService.newsFlux.subscribe(this::broadcastNews)
     }
@@ -46,7 +52,8 @@ class DiscordService(
     private fun broadcastNews(news: News) {
         val fileUpload = FileUpload.fromData(URI(news.imageRef).toURL().openStream(), news.imageRef)
 
-        discordSubscribersRepository.findAll()
+        discordSubscribersRepository
+            .findAllByTargetFlagsContaining(news.flags)
             .subscribe {
                 discordBot
                     .getTextChannelById(it.channelId)
@@ -62,7 +69,12 @@ class DiscordService(
             .publishOn(Schedulers.boundedElastic())
             .switchIfEmpty(Mono.error(Throwable("Not found")))
             .doOnError {
-                discordSubscribersRepository.save(DiscordNewsSubscriber(channelId = event.channelIdLong)).subscribe()
+                discordSubscribersRepository.save(
+                    DiscordNewsSubscriber(
+                        channelId = event.channelIdLong,
+                        targetFlags = emptyList()
+                    )
+                ).subscribe()
                 event.hook.sendMessage("Subscribed to news").queue()
             }
             .onErrorComplete()
@@ -73,6 +85,6 @@ class DiscordService(
     }
 
     override fun onSlashCommandInteraction(event: SlashCommandInteractionEvent) {
-        commandHandlers.handleEvent(event)
+        commandHandlers.handle(event)
     }
 }
