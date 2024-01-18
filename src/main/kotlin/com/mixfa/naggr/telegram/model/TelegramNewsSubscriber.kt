@@ -9,5 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class TelegramNewsSubscriber(
     @Id val id: ObjectId = ObjectId(),
     var chatId: Long,
-    var targetFlags: List<Flag>
+    var targetFlags: List<Flag>,
+//    var language: String
 )
