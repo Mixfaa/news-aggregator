@@ -22,19 +22,14 @@ class CliInputHandlerWithArgs(
     }
 
     override fun handle(event: String): String {
-        val args = event
-            .substringAfter(targetCommand)
-            .drop(1)
-            .split(' ')
+        val args = event.substringAfter(targetCommand).drop(1).split(' ')
 
         return handler.invoke(args)
     }
 }
 
 class CliInputHandler(
-    private val targetCommand: String,
-    private val handler: () -> String,
-    errorHandler: ((Throwable) -> Unit)? = null
+    private val targetCommand: String, private val handler: () -> String, errorHandler: ((Throwable) -> Unit)? = null
 ) : LambdaInputHandler<String, String>({ it.startsWith(targetCommand) }, { handler.invoke() }, errorHandler)
 
 /*
@@ -50,33 +45,55 @@ open class CliHandler(
         CliInputHandlerWithArgs("telegram-set-target-flags", this::setupTelegramTargetFlags)
     )
 
+    private var telegramChatId = -1L
+
     private fun setupTelegramTargetFlags(args: List<String>): String {
-        if (args.size < 2) return "Usage: telegram-set-target-flags [chat id] [flags...]"
+        if (args.isEmpty()) return "Usage: telegram-set-target-flags [chat id](optional) [flags...]"
 
         val chatId = args[0].toLongOrNull()
-            ?: return "Usage: telegram-set-target-flags [chat id] [flags...]"
 
-        val flags = args
-            .asSequence()
-            .drop(1)
-            .mapNotNull {
-                try {
-                    Flag.valueOf(it.uppercase())
-                } catch (_: Exception) {
-                    null
-                }
-            }
-            .toList()
+        if (chatId != null) {
+            if (args.size == 1)
+                return "Usage: telegram-set-target-flags [chat id](optional) [flags...]"
+
+            val flags = args
+                .asSequence()
+                .drop(1)
+                .mapNotNull {
+                    try {
+                        Flag.valueOf(it.uppercase())
+                    } catch (_: Exception) {
+                        null
+                    }
+                }.toList()
+
+            telegramNewsBotService.setSubscriberTargetFlags(chatId, flags)
+            return "Request submitted, check telegram chat"
+        } else {
+            if (telegramChatId == -1L)
+                return "Usage: telegram-set-target-flags [chat id](optional) [flags...]"
+
+            val flags = args
+                .asSequence()
+                .mapNotNull {
+                    try {
+                        Flag.valueOf(it.uppercase())
+                    } catch (_: Exception) {
+                        null
+                    }
+                }.toList()
 
 
-        telegramNewsBotService.setSubscriberTargetFlags(chatId, flags)
-        return "Request submitted, check telegram chat"
+            telegramNewsBotService.setSubscriberTargetFlags(telegramChatId, flags)
+            return "Request submitted, check telegram chat"
+        }
     }
 
     private fun setupTelegramBot(args: List<String>): String {
         if (args.size != 1) return "Usage: telegram-setup [chat id]"
-        val chatId = args.first().toLongOrNull()
-            ?: return "Usage: telegram-setup [chat id]"
+        val chatId = args.first().toLongOrNull() ?: return "Usage: telegram-setup [chat id]"
+
+        telegramChatId = chatId
 
         telegramNewsBotService.subscribeChannel(chatId)
         return "Request submitted, check telegram chat"
