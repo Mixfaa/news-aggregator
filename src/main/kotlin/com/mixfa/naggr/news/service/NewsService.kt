@@ -1,27 +1,21 @@
 package com.mixfa.naggr.news.service
 
-import org.springframework.scheduling.annotation.Scheduled
+import com.mixfa.naggr.news.providers.NewsProvider
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
-import com.mixfa.naggr.news.providers.NewsProvider
 
 @Service
 class NewsService(newsProviders: List<NewsProvider>) {
-    var newsFlux =
-        Flux.concat(newsProviders.map(NewsProvider::newsFlux)).subscribeOn(Schedulers.boundedElastic()).share()
-            .log()
-//
-//    @Scheduled(fixedRate = 1000000)
-//    fun keepAlive() {
-//        println(System.currentTimeMillis())
-//    }
+    init {
+        val logger = LoggerFactory.getLogger(this.javaClass)
 
-//    @PostConstruct
-//    fun initialize() {
-//        newsFlux.subscribe(::println)
-//        newsFlux.subscribe {
-//            println("Hel $it")
-//        }
-//    }
+        newsProviders.forEach {
+            logger.info("New news provider: ${it.javaClass}")
+        }
+    }
+
+    var newsFlux =
+        Flux.merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
 }

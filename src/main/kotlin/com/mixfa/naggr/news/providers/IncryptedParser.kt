@@ -7,6 +7,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 import java.time.Duration
 
 @Component
@@ -15,8 +16,9 @@ class IncryptedParser : NewsProvider {
 
     override val newsFlux: Flux<News> = Flux.create {
         while (!it.isCancelled) {
-            val news = parseNews() ?: continue
-            it.next(news)
+            val news = parseNews()
+            if (news != null) it.next(news)
+            println("IncryptedParser: $news")
             Thread.sleep(Duration.ofMinutes(5))
         }
     }
@@ -62,7 +64,7 @@ class IncryptedParser : NewsProvider {
 
             val title = titleDiv.text()
 
-            if (lastParsedNews?.title.contentEquals(title)) return null
+            if (lastParsedNews?.title == title) return null
 
             val link = titleDiv.selectFirst("[href]")?.attr("href") ?: return null
 

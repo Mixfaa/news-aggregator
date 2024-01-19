@@ -1,7 +1,4 @@
-package com.mixfa.naggr.shared
-
-import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
-import org.telegram.telegrambots.meta.api.objects.Update
+package com.mixfa.naggr.utils
 
 //object TelegramUpdatePredicates {
 //    fun byMessageText(targetText: String): (Update) -> Boolean {
@@ -17,7 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.Update
 
 interface InputHandler<T, R> {
     fun test(input: T): Boolean
-    fun handle(event: T): R
+    fun handle(input: T): R
     fun handleError(throwable: Throwable)
 }
 
@@ -31,8 +28,8 @@ open class LambdaInputHandler<T, R>(
         return predicate.invoke(input)
     }
 
-    override fun handle(event: T): R {
-        return handler.invoke(event)
+    override fun handle(input: T): R {
+        return handler.invoke(input)
     }
 
     override fun handleError(throwable: Throwable) {

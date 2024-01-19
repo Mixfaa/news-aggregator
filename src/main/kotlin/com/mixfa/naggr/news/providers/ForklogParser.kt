@@ -5,6 +5,7 @@ import com.mixfa.naggr.news.model.News
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
+import reactor.core.scheduler.Schedulers
 import java.time.Duration
 
 @Component
@@ -13,8 +14,9 @@ class ForklogParser : NewsProvider {
 
     override val newsFlux: Flux<News> = Flux.create {
         while (!it.isCancelled) {
-            val news = parseNews() ?: continue
-            it.next(news)
+            val news = parseNews()
+            if (news != null) it.next(news)
+            println("Forklog: $news")
             Thread.sleep(Duration.ofMinutes(5))
         }
     }
@@ -33,12 +35,11 @@ class ForklogParser : NewsProvider {
 
             val title = newsCell.selectFirst("div.text_blk")?.selectFirst("p")?.text() ?: return null
 
-            val imageRef = newsCell.selectFirst("div.image_blk")?.selectFirst("img")?.attr("href") ?: return null
+//            val imageRef = newsCell.selectFirst("img")?.attr("src") ?: return null
 
-            lastParsedNews = News(link, title, imageRef, emptyMap(), listOf(Flag.CRYPTO))
+            lastParsedNews = News(link, title, null, emptyMap(), listOf(Flag.CRYPTO))
             lastParsedNews
         } catch (ex: Exception) {
-            println(ex)
             null
         }
     }

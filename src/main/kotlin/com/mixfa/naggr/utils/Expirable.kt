@@ -1,4 +1,4 @@
-package com.mixfa.naggr.shared
+package com.mixfa.naggr.utils
 
 import java.util.*
 import java.util.concurrent.TimeUnit
