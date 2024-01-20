@@ -21,12 +21,10 @@ repositories {
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	implementation("org.jsoup:jsoup:1.17.2")
-	implementation("net.dv8tion:JDA:5.0.0-beta.19")
 	implementation("org.telegram:telegrambots:6.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
-//	implementation("com.github.f4b6a3:uuid-creator:5.3.3")
+	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
 }
 
 tasks.withType<KotlinCompile> {

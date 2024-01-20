@@ -1,6 +1,5 @@
 package com.mixfa.naggr.news.service
 
-import com.mixfa.naggr.news.providers.NewsProvider
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux

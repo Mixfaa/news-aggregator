@@ -9,7 +9,8 @@ import com.mixfa.naggr.utils.InputHandler
 import com.mixfa.naggr.utils.LambdaInputHandler
 import com.mixfa.naggr.utils.handle
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
+import org.springframework.data.domain.Pageable
+import org.springframework.stereotype.Service
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands
@@ -19,6 +20,8 @@ import org.telegram.telegrambots.meta.api.objects.User
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeAllChatAdministrators
 import reactor.core.publisher.Mono
+import reactor.core.scheduler.Schedulers
+import java.time.Duration
 
 private object TelegramUpdatePredicates {
     fun byChatMemberAdded(targetUser: User): (Update) -> Boolean {
@@ -61,12 +64,11 @@ class TelegramLambdaCommandHandler(
     }
 }
 
-
-@Component
+@Service
 final class TelegramNewsBotService(
     telegramBotsApi: TelegramBotsApi,
-    private val newsSubscribersRepository: TgSubscribersRepository,
     newsService: NewsService,
+    private val newsSubscribersRepository: TgSubscribersRepository,
     @Value("\${telegrambot.username}") private val username: String,
     @Value("\${telegrambot.token}") private val token: String
 ) : TelegramLongPollingBot(token) {
@@ -82,7 +84,6 @@ final class TelegramNewsBotService(
             ), BotCommandScopeAllChatAdministrators(), null
         )
         executeAsync(setMyCommands)
-
 
         val telegramBotUser = me
         inputHandlers = listOf(
@@ -102,10 +103,13 @@ final class TelegramNewsBotService(
             )
         )
 
-        newsService.newsFlux.share().onErrorContinue { throwable, obj ->
-            println(throwable.localizedMessage)
-            println(obj)
-        }.subscribe(this::handleNews)
+        newsService.newsFlux
+            .share()
+            .bufferTimeout(5, Duration.ofMinutes(5))
+            .onErrorContinue { throwable, obj ->
+                println(throwable.localizedMessage)
+                println(obj)
+            }.subscribe(this::handleNews)
     }
 
     private fun handleStart(upd: Update, args: List<String>) {
@@ -116,6 +120,11 @@ final class TelegramNewsBotService(
             .subscribe { exists ->
                 if (!exists)
                     newsSubscribersRepository.save(TelegramNewsSubscriber(chatId = chatId)).subscribe()
+                executeAsync(SendMessage(chatId.toString(), "Added to newsletter list"))
+                    .exceptionally { error ->
+                        removeFromNewsletterByChatId(chatId)
+                        null
+                    }
             }
     }
 
@@ -138,7 +147,9 @@ final class TelegramNewsBotService(
             return
         }
 
-        newsSubscribersRepository.findByChatId(chatId).switchIfEmpty(Mono.error(EmptyMonoError))
+        newsSubscribersRepository
+            .findByChatId(chatId)
+            .switchIfEmpty(Mono.error(EmptyMonoError))
             .onErrorComplete { error ->
                 executeAsync(SendMessage(chatId.toString(), "Your chat is not in newsletter yet"))
                 error == EmptyMonoError
@@ -159,22 +170,41 @@ final class TelegramNewsBotService(
             }
     }
 
-    private fun handleNews(news: News) {
+    private fun handleNews(newsList: List<News>) {
+        val allFlags = ArrayList<Flag>(Flag.entries.size)
+        newsList.forEach { allFlags.addAll(it.flags) }
 
-        val sendRequest = SendMessage.builder().text(news.link).chatId(0).build()
+        val newsMessages = newsList
+            .map { newsEl ->
+                newsEl to SendMessage.builder()
+                    .text(newsEl.link)
+                    .chatId(0)
+                    .build()
+            }
 
         newsSubscribersRepository
-            .findAllByTargetFlagsContaining(news.flags)
+            .findAllByTargetFlagsContaining(allFlags, defaultPage)
             .onErrorContinue { throwable, obj ->
                 println(throwable.localizedMessage)
                 println(obj)
-            }.subscribe {
-                sendRequest.setChatId(it.chatId)
-                executeAsync(sendRequest).exceptionally { _ ->
-                    newsSubscribersRepository.deleteByChatId(it.chatId).subscribe()
-                    null
+            }
+            .publishOn(Schedulers.parallel())
+            .subscribe { subscriber ->
+                for ((news, message) in newsMessages) {
+                    if (subscriber.targetFlags.none { news.flags.contains(it) })
+                        continue
+
+                    message.setChatId(subscriber.chatId)
+                    executeAsync(message).exceptionally { _ ->
+                        removeFromNewsletterByChatId(subscriber.chatId)
+                        null
+                    }
                 }
             }
+    }
+
+    private fun removeFromNewsletterByChatId(chatId: Long) {
+        newsSubscribersRepository.deleteByChatId(chatId).subscribe()
     }
 
     override fun getBotUsername(): String = username
@@ -182,58 +212,9 @@ final class TelegramNewsBotService(
     override fun onUpdateReceived(update: Update) {
         inputHandlers.handle(update)
     }
+
+    companion object {
+        val defaultPage = Pageable.ofSize(10)
+    }
 }
 
-
-/*
-
-    private fun handleDisableNewsletter(upd: Update, args: List<String>) {
-        val usageMessage = "Usage: /disable_this_chat [id]"
-
-        if (args.isEmpty()) {
-            val sendMessage = SendMessage.builder().chatId(upd.message.chatId).text(usageMessage).build()
-
-            executeAsync(sendMessage)
-            return
-        }
-
-        val subscriberId = args[0]
-
-        newsSubscribersRepository.existsById(subscriberId).subscribe { exist ->
-            val responseMessage = SendMessage.builder().chatId(upd.message.chatId).text("").build()
-
-            if (exist) {
-                newsSubscribersRepository.deleteById(subscriberId).subscribe {
-                    responseMessage.text = "Chat removed from newsletter"
-                    executeAsync(responseMessage)
-                }
-            } else {
-                responseMessage.text = "No chat found for $subscriberId"
-                executeAsync(responseMessage)
-            }
-        }
-    }
-
-    private fun handleTelegramCmd(upd: Update) {
-        val chatId = upd.message.chatId
-
-        newsSubscribersRepository.findByChatId(chatId).switchIfEmpty(Mono.error(EmptyMonoError))
-            .onErrorComplete { error ->
-                newsSubscribersRepository.save(TelegramNewsSubscriber(chatId = chatId, targetFlags = Flag.entries))
-                    .subscribe {
-                        val sendMessage =
-                            SendMessage.builder().chatId(chatId).text("Your id is: ${it.id}, use it manage chat")
-                                .build()
-
-                        executeAsync(sendMessage)
-                    }
-                error == EmptyMonoError
-            }.subscribe {
-                val sendMessage =
-                    SendMessage.builder().chatId(chatId).text("Your id is: ${it.id}, use it manage chat").build()
-
-                executeAsync(sendMessage)
-            }
-    }
-
- */

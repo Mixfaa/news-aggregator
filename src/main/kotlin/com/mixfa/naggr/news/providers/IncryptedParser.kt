@@ -3,11 +3,11 @@ package com.mixfa.naggr.news.providers
 
 import com.mixfa.naggr.news.model.Flag
 import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.news.service.NewsProvider
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
-import reactor.core.scheduler.Schedulers
 import java.time.Duration
 
 @Component

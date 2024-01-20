@@ -1,8 +1,5 @@
 package com.mixfa.naggr
 
-import net.dv8tion.jda.api.JDA
-import net.dv8tion.jda.api.JDABuilder
-import net.dv8tion.jda.api.entities.Activity
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -23,15 +20,22 @@ class NaggrApplication {
     fun telegramBotsApi(@Value("\${telegrambot.token}") token: String): TelegramBotsApi {
         return TelegramBotsApi(DefaultBotSession::class.java)
     }
+//
+//    @Bean
+//    fun redisTelegramSubscribersTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<TelegramNewsSubscriber, String> {
+//        val serializationContext =
+//            RedisSerializationContext.newSerializationContext<TelegramNewsSubscriber, String>(StringRedisSerializer())
+//                .hashKey(StringRedisSerializer())
+//                .hashValue(StringRedisSerializer())
+//                .build()
+//
+//        return ReactiveRedisTemplate(factory, serializationContext)
+//            .also {
+//                it.connectionFactory.reactiveConnection.serverCommands().flushAll().subscribe()
+//            }
+//    }
 
-    @Bean
-    fun discordBot(@Value("\${discordbot.token}") token: String): JDA {
-        val builder = JDABuilder.createDefault(token)
-//        builder.setBulkDeleteSplittingEnabled(false)
-        builder.setActivity(Activity.customStatus("сосет крипто-тунца(хуйнца)"))
 
-        return builder.build()
-    }
 }
 
 fun main(args: Array<String>) {
