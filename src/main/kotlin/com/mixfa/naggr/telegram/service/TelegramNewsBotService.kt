@@ -35,7 +35,6 @@ private object TelegramUpdatePredicates {
             return@func upd.message?.leftChatMember?.id == targetUser.id
         }
     }
-
 }
 
 class TelegramLambdaCommandHandler(
@@ -154,13 +153,13 @@ final class TelegramNewsBotService(
                 executeAsync(SendMessage(chatId.toString(), "Your chat is not in newsletter yet"))
                 error == EmptyMonoError
             }.subscribe {
-                val newFlags = args.asSequence().mapNotNull { arg ->
+                val newFlags = args.mapNotNull { arg ->
                     try {
                         Flag.valueOf(arg.uppercase())
                     } catch (ex: Exception) {
                         null
                     }
-                }.toList()
+                }
 
                 it.targetFlags = newFlags
 
