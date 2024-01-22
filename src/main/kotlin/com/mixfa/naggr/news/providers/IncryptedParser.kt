@@ -9,6 +9,20 @@ import org.jsoup.nodes.Element
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import java.time.Duration
+import java.util.*
+
+
+/*
+
+    override val newsFlux: Flux<News> = Flux.generate<Optional<News>> {
+        val news = parseNews()
+        it.next(Optional.ofNullable(news))
+    }
+        .delayElements(Duration.ofMinutes(5))
+        .filter { it.isPresent }
+        .map { it.get() }
+
+ */
 
 @Component
 class IncryptedParser : NewsProvider {
@@ -18,7 +32,6 @@ class IncryptedParser : NewsProvider {
         while (!it.isCancelled) {
             val news = parseNews()
             if (news != null) it.next(news)
-            println("IncryptedParser: $news")
             Thread.sleep(Duration.ofMinutes(5))
         }
     }

@@ -7,6 +7,7 @@ import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import java.time.Duration
+import java.util.*
 
 
 @Component
@@ -17,7 +18,6 @@ class InvestingComParser : NewsProvider {
         while (!it.isCancelled) {
             val news = parseNews()
             if (news != null) it.next(news)
-            println("InvestingComParser: $news")
             Thread.sleep(Duration.ofMinutes(5))
         }
     }

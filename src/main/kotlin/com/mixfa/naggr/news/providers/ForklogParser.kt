@@ -16,10 +16,10 @@ class ForklogParser : NewsProvider {
         while (!it.isCancelled) {
             val news = parseNews()
             if (news != null) it.next(news)
-            println("Forklog: $news")
             Thread.sleep(Duration.ofMinutes(5))
         }
     }
+
 
     fun parseNews(): News? {
         return try {
