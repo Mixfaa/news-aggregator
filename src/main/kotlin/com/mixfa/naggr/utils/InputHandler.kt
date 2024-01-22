@@ -1,17 +1,5 @@
 package com.mixfa.naggr.utils
 
-//object TelegramUpdatePredicates {
-//    fun byMessageText(targetText: String): (Update) -> Boolean {
-//        return func@{ upd ->
-//            val message = upd.message ?: return@func false
-//            val text = message.text ?: return@func false
-//
-//            return@func text.contentEquals(targetText)
-//        }
-//    }
-//}
-
-
 interface InputHandler<T, R> {
     fun test(input: T): Boolean
     fun handle(input: T): R

@@ -1,9 +1,8 @@
-package com.mixfa.naggr.telegram.service
+package com.mixfa.naggr.telegramBot.service
 
-import com.mixfa.naggr.news.model.Flag
 import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.service.NewsService
-import com.mixfa.naggr.telegram.model.TelegramNewsSubscriber
+import com.mixfa.naggr.news.service.NewsletterService
+import com.mixfa.naggr.telegramBot.model.TelegramNewsSubscriber
 import com.mixfa.naggr.utils.EmptyMonoError
 import com.mixfa.naggr.utils.InputHandler
 import com.mixfa.naggr.utils.LambdaInputHandler
@@ -37,12 +36,13 @@ private object TelegramUpdatePredicates {
     }
 }
 
-class TelegramLambdaCommandHandler(
+private class TelegramLambdaCommandHandler(
     private val command: String,
     private val handler: (Update, List<String>) -> Unit,
-    var parseArgs: Boolean = true,
+    var splitArgs: Boolean = true,
     private val errorHandler: ((Throwable) -> Unit)? = null
 ) : InputHandler<Update, Unit> {
+
     override fun test(input: Update): Boolean {
         val message = input.message ?: return false
 
@@ -53,8 +53,7 @@ class TelegramLambdaCommandHandler(
     }
 
     override fun handle(input: Update) {
-        val args = if (parseArgs) input.message.text.split(' ').drop(1) else emptyList()
-
+        val args = if (splitArgs) input.message.text.split(' ').drop(1) else emptyList()
         handler.invoke(input, args)
     }
 
@@ -66,8 +65,8 @@ class TelegramLambdaCommandHandler(
 @Service
 final class TelegramNewsBotService(
     telegramBotsApi: TelegramBotsApi,
-    newsService: NewsService,
-    private val newsSubscribersRepository: TgSubscribersRepository,
+    newsletterService: NewsletterService,
+    private val newsSubscribersRepository: TelegramSubscribersRepository,
     @Value("\${telegrambot.username}") private val username: String,
     @Value("\${telegrambot.token}") private val token: String
 ) : TelegramLongPollingBot(token) {
@@ -79,7 +78,10 @@ final class TelegramNewsBotService(
         val setMyCommands = SetMyCommands(
             listOf(
                 BotCommand("start", "Start receiving newsletter"),
-                BotCommand("set_flags", "set news tags you want to receive, available tags are: ${Flag.flagsList}"),
+                BotCommand(
+                    "set_flags",
+                    "set news tags you want to receive, available tags are: ${News.Flag.flagsList}"
+                ),
             ), BotCommandScopeAllChatAdministrators(), null
         )
         executeAsync(setMyCommands)
@@ -98,11 +100,11 @@ final class TelegramNewsBotService(
                 "/set_flags", this::handleSetFlags
             ),
             TelegramLambdaCommandHandler(
-                "/start", this::handleStart, parseArgs = false
+                "/start", this::handleStart, splitArgs = false
             )
         )
 
-        newsService.newsFlux
+        newsletterService.newsFlux
             .bufferTimeout(5, Duration.ofMinutes(5))
             .onErrorContinue { throwable, obj ->
                 println(throwable.localizedMessage)
@@ -154,7 +156,7 @@ final class TelegramNewsBotService(
             }.subscribe {
                 val newFlags = args.mapNotNull { arg ->
                     try {
-                        Flag.valueOf(arg.uppercase())
+                        News.Flag.valueOf(arg.uppercase())
                     } catch (ex: Exception) {
                         null
                     }
@@ -169,7 +171,7 @@ final class TelegramNewsBotService(
     }
 
     private fun handleNews(newsList: List<News>) {
-        val allFlags = ArrayList<Flag>(Flag.entries.size)
+        val allFlags = ArrayList<News.Flag>(News.Flag.entries.size)
         newsList.forEach { allFlags.addAll(it.flags) }
 
         val newsMessages = newsList

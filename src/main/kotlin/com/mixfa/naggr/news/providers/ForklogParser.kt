@@ -1,15 +1,14 @@
 package com.mixfa.naggr.news.providers
 
-import com.mixfa.naggr.news.model.Flag
 import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.service.NewsProvider
+import com.mixfa.naggr.news.service.ReactiveNewsProvider
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux
 import java.time.Duration
 
 @Component
-class ForklogParser : NewsProvider {
+class ForklogParser : ReactiveNewsProvider {
     private var lastParsedNews: News? = null
 
     override val newsFlux: Flux<News> = Flux.create {
@@ -37,7 +36,7 @@ class ForklogParser : NewsProvider {
 
 //            val imageRef = newsCell.selectFirst("img")?.attr("src") ?: return null
 
-            lastParsedNews = News(link, title, null, emptyMap(), listOf(Flag.CRYPTO))
+            lastParsedNews = News(link, title, null, emptyMap(), listOf(News.Flag.CRYPTO))
             lastParsedNews
         } catch (ex: Exception) {
             null

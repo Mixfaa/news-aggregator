@@ -19,4 +19,13 @@ data class News(
             appendLine(link)
         }
     }
+
+    enum class Flag {
+        CRYPTO,
+        FINANCE;
+
+        companion object {
+            val flagsList = Flag.entries.joinToString(separator = "\n")
+        }
+    }
 }

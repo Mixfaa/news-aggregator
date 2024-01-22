@@ -1,14 +1,14 @@
-package com.mixfa.naggr.telegram.model
+package com.mixfa.naggr.telegramBot.model
 
-import com.mixfa.naggr.news.model.Flag
+import com.mixfa.naggr.news.model.News
 import org.bson.types.ObjectId
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.io.Serializable
 
-@Document("tgNewsSubscriber")
+@Document("TelegramNewsSubscriber")
 data class TelegramNewsSubscriber(
     @Id val id: ObjectId = ObjectId(),
     var chatId: Long,
-    var targetFlags: List<Flag> = Flag.entries,
+    var targetFlags: List<News.Flag> = News.Flag.entries,
 ) : Serializable
