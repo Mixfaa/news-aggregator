@@ -103,7 +103,6 @@ final class TelegramNewsBotService(
         )
 
         newsService.newsFlux
-            .share()
             .bufferTimeout(5, Duration.ofMinutes(5))
             .onErrorContinue { throwable, obj ->
                 println(throwable.localizedMessage)

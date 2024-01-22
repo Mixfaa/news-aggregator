@@ -16,5 +16,5 @@ class NewsService(newsProviders: List<NewsProvider>) {
     }
 
     var newsFlux =
-        Flux.merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
+        Flux.merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) }).share()
 }
