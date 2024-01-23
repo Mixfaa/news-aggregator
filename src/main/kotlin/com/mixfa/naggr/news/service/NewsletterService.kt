@@ -29,7 +29,7 @@ class NewsletterService(
                 try {
                     extender.extend(news)
                 } catch (ex: Exception) {
-                    logger.error(ex.localizedMessage)
+                    logger.error(ex.message)
                     logger.info("Extender $extender will not be called anymore")
 
                     newsExtenders.remove(extender)
