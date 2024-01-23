@@ -42,7 +42,7 @@ class InvestingComParser : ReactiveNewsProvider {
 
             lastParsedNews = News(
                 link, title, imageRef,
-                if (content != null) mapOf("content" to content) else emptyMap(), listOf(News.Flag.CRYPTO)
+                if (content != null) mutableMapOf("content" to content) else mutableMapOf(), listOf(News.Flag.CRYPTO)
             )
             lastParsedNews
         } catch (ex: Exception) {

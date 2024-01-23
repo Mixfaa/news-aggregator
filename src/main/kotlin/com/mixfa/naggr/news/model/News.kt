@@ -4,7 +4,7 @@ data class News(
     val link: String,
     val title: String,
     val imageRef: String?,
-    val additionalInfo: Map<String, String>,
+    val additionalInfo: MutableMap<String, String>,
     val flags: List<Flag>
 ) {
     val caption: String by lazy {

@@ -19,7 +19,6 @@ class ForklogParser : ReactiveNewsProvider {
         }
     }
 
-
     fun parseNews(): News? {
         return try {
             val document = Jsoup.connect("https://forklog.com/news").get() ?: return null
@@ -36,7 +35,7 @@ class ForklogParser : ReactiveNewsProvider {
 
 //            val imageRef = newsCell.selectFirst("img")?.attr("src") ?: return null
 
-            lastParsedNews = News(link, title, null, emptyMap(), listOf(News.Flag.CRYPTO))
+            lastParsedNews = News(link, title, null, mutableMapOf(), listOf(News.Flag.CRYPTO))
             lastParsedNews
         } catch (ex: Exception) {
             null

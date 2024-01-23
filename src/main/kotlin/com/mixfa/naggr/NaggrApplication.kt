@@ -1,5 +1,8 @@
 package com.mixfa.naggr
 
+import com.jakewharton.retrofit2.adapter.reactor.ReactorCallAdapterFactory
+import com.theokanning.openai.client.OpenAiApi
+import com.theokanning.openai.service.OpenAiService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -9,7 +12,37 @@ import org.springframework.data.mongodb.repository.config.EnableReactiveMongoRep
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.telegram.telegrambots.meta.TelegramBotsApi
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
+import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
+import retrofit2.converter.jackson.JacksonConverterFactory
+import java.time.Duration
 
+
+/*
+@Component
+class FreeAiProvider(
+    @Value("\${aiprovider.apikey}") private val aiApiKey: String,
+    @Value("\${aiprovider.baseurl}") private val aiBaseurl: String,
+) : AiProvider {
+
+    private val apiService: OpenAiService by lazy {
+        val objectMapper = OpenAiService.defaultObjectMapper()
+        val httpClient = OpenAiService.defaultClient(aiApiKey, Duration.ofSeconds(1000))
+
+        val retrofit = Retrofit.Builder().client(httpClient).baseUrl(aiBaseurl)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(JacksonConverterFactory.create(objectMapper)).build()
+
+        val openAiApi = retrofit.create(OpenAiApi::class.java)
+
+        OpenAiService(openAiApi)
+    }
+
+    override fun service(): OpenAiService {
+        return apiService
+    }
+}
+ */
 
 @SpringBootApplication
 @EnableScheduling
@@ -20,21 +53,22 @@ class NaggrApplication {
     fun telegramBotsApi(@Value("\${telegrambot.token}") token: String): TelegramBotsApi {
         return TelegramBotsApi(DefaultBotSession::class.java)
     }
-//
-//    @Bean
-//    fun redisTelegramSubscribersTemplate(factory: ReactiveRedisConnectionFactory): ReactiveRedisTemplate<TelegramNewsSubscriber, String> {
-//        val serializationContext =
-//            RedisSerializationContext.newSerializationContext<TelegramNewsSubscriber, String>(StringRedisSerializer())
-//                .hashKey(StringRedisSerializer())
-//                .hashValue(StringRedisSerializer())
-//                .build()
-//
-//        return ReactiveRedisTemplate(factory, serializationContext)
-//            .also {
-//                it.connectionFactory.reactiveConnection.serverCommands().flushAll().subscribe()
-//            }
-//    }
 
+    @Bean
+    fun openAiService(
+        @Value("\${aiprovider.apikey}") aiApiKey: String,
+        @Value("\${aiprovider.baseurl}") aiBaseurl: String,
+    ): OpenAiService {
+        val objectMapper = OpenAiService.defaultObjectMapper()
+        val httpClient = OpenAiService.defaultClient(aiApiKey, Duration.ofSeconds(15))
+
+        val retrofit = Retrofit.Builder().client(httpClient).baseUrl(aiBaseurl)
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addConverterFactory(JacksonConverterFactory.create(objectMapper)).build()
+
+        val openAiApi = retrofit.create(OpenAiApi::class.java)
+        return OpenAiService(openAiApi)
+    }
 
 }
 

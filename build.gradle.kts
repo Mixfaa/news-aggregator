@@ -25,6 +25,11 @@ dependencies {
 	implementation("org.telegram:telegrambots:6.8.0")
 	implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 	implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
+
+	implementation("com.theokanning.openai-gpt3-java:service:0.16.0")
+	implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
+
+	implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0")
 }
 
 tasks.withType<KotlinCompile> {

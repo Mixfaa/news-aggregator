@@ -6,20 +6,37 @@ import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
 
-/*
-    Service merges all reactive providers to one flux, and then receiver services subscribe to it
+/**
+Service merges all reactive providers to one flux, and then receiver services subscribe to it
  */
 @Service
-class NewsletterService(newsProviders: List<ReactiveNewsProvider>) {
-    init {
-        val logger = LoggerFactory.getLogger(this.javaClass)
+class NewsletterService(
+    newsProviders: List<ReactiveNewsProvider>,
+    newsExtenders: MutableList<NewsDataExtender>
+) {
+    private val logger = LoggerFactory.getLogger(this.javaClass)
 
+    init {
         newsProviders.forEach {
             logger.info("New news provider: ${it.javaClass}")
         }
     }
 
-    val newsFlux = Flux.merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) }).share()
+    val newsFlux = Flux
+        .merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
+        .doOnNext { news ->
+            newsExtenders.forEach { extender ->
+                try {
+                    extender.extend(news)
+                } catch (ex: Exception) {
+                    logger.error(ex.localizedMessage)
+                    logger.info("Extender $extender will not be called anymore")
+
+                    newsExtenders.remove(extender)
+                }
+            }
+        }
+        .share()
 
     @Scheduled(fixedRate = 1000 * 60 * 60)
     private fun keepAlive() {

@@ -83,11 +83,11 @@ class IncryptedParser : ReactiveNewsProvider {
 
             val description = descriptionDiv.text()
 
-            val additionalInfo = buildMap {
-                this["description"] = description
-                parsePage(link)?.let {
-                    this.putAll(it)
-                }
+            val additionalInfo = mutableMapOf<String, String>()
+
+            additionalInfo["description"] = description
+            parsePage(link)?.let {
+                additionalInfo.putAll(it)
             }
 
             lastParsedNews = News(link, title, imageRef, additionalInfo, listOf(News.Flag.CRYPTO))

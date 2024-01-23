@@ -3,10 +3,7 @@ package com.mixfa.naggr.telegramBot.service
 import com.mixfa.naggr.news.model.News
 import com.mixfa.naggr.news.service.NewsletterService
 import com.mixfa.naggr.telegramBot.model.TelegramNewsSubscriber
-import com.mixfa.naggr.utils.EmptyMonoError
-import com.mixfa.naggr.utils.InputHandler
-import com.mixfa.naggr.utils.LambdaInputHandler
-import com.mixfa.naggr.utils.handle
+import com.mixfa.naggr.utils.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -62,6 +59,7 @@ private class TelegramLambdaCommandHandler(
     }
 }
 
+
 @Service
 final class TelegramNewsBotService(
     telegramBotsApi: TelegramBotsApi,
@@ -105,7 +103,7 @@ final class TelegramNewsBotService(
         )
 
         newsletterService.newsFlux
-            .bufferTimeout(5, Duration.ofMinutes(5))
+            .bufferTimeout(3, Duration.ofMinutes(5))
             .onErrorContinue { throwable, obj ->
                 println(throwable.localizedMessage)
                 println(obj)
@@ -177,7 +175,7 @@ final class TelegramNewsBotService(
         val newsMessages = newsList
             .map { newsEl ->
                 newsEl to SendMessage.builder()
-                    .text(newsEl.link)
+                    .text(newsEl.writeForTelegram())
                     .chatId(0)
                     .build()
             }
