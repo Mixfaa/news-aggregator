@@ -1,9 +1,9 @@
 package com.mixfa.naggr.discordBot.service
 
-import com.mixfa.naggr.discordBot.model.DiscordSubscriber
-import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.model.flagsSet
-import com.mixfa.naggr.news.service.NewsletterService
+import com.mixfa.naggr.discordBot.model.DiscordNewsSubscriber
+import com.mixfa.naggr.newsletter.model.News
+import com.mixfa.naggr.newsletter.model.flagsSet
+import com.mixfa.naggr.newsletter.service.NewsletterService
 import com.mixfa.naggr.utils.*
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Service
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
@@ -26,7 +25,7 @@ private object DiscordEventPredicates {
 }
 
 @Service
-final class DiscordBotService(
+final class DiscordNewsBotService(
     private val discordBot: JDA,
     private val discordSubscribersRepository: DiscordSubscribersRepository,
     private val newsletterService: NewsletterService
@@ -83,16 +82,16 @@ final class DiscordBotService(
         discordSubscribersRepository.findByChannelId(event.channelIdLong)
             .publishOn(Schedulers.boundedElastic())
             .switchIfEmpty(Mono.error(EmptyMonoError))
-            .doOnError {
+            .onErrorComplete { error ->
                 discordSubscribersRepository.save(
-                    DiscordSubscriber(
+                    DiscordNewsSubscriber(
                         channelId = event.channelIdLong,
                         targetFlags = News.Flag.entries
                     )
                 ).subscribe()
                 event.hook.sendMessage("Subscribed to news").queue()
+                error == EmptyMonoError
             }
-            .onErrorComplete()
             .subscribe {
                 discordSubscribersRepository.delete(it).subscribe()
                 event.hook.sendMessage("Unsubscribed from news").queue()

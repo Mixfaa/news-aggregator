@@ -1,7 +1,7 @@
-package com.mixfa.naggr.news.extender
+package com.mixfa.naggr.newsletter.extender
 
-import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.service.NewsDataExtender
+import com.mixfa.naggr.newsletter.model.News
+import com.mixfa.naggr.newsletter.service.NewsDataExtender
 import com.theokanning.openai.completion.chat.ChatCompletionRequest
 import com.theokanning.openai.completion.chat.ChatMessage
 import com.theokanning.openai.service.OpenAiService

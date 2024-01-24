@@ -1,4 +1,4 @@
-package com.mixfa.naggr.news.model
+package com.mixfa.naggr.newsletter.model
 
 data class News(
     val link: String,

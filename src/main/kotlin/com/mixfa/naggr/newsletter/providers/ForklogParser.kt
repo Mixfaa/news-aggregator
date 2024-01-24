@@ -1,7 +1,7 @@
-package com.mixfa.naggr.news.providers
+package com.mixfa.naggr.newsletter.providers
 
-import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.service.ReactiveNewsProvider
+import com.mixfa.naggr.newsletter.model.News
+import com.mixfa.naggr.newsletter.service.ReactiveNewsProvider
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import reactor.core.publisher.Flux

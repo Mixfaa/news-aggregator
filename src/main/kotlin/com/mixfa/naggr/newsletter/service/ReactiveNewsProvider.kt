@@ -1,6 +1,6 @@
-package com.mixfa.naggr.news.service
+package com.mixfa.naggr.newsletter.service
 
-import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.newsletter.model.News
 import reactor.core.publisher.Flux
 
 /**

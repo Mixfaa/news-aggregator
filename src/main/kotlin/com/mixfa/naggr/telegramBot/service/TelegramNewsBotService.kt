@@ -1,8 +1,8 @@
 package com.mixfa.naggr.telegramBot.service
 
-import com.mixfa.naggr.news.model.News
-import com.mixfa.naggr.news.model.flagsSet
-import com.mixfa.naggr.news.service.NewsletterService
+import com.mixfa.naggr.newsletter.model.News
+import com.mixfa.naggr.newsletter.model.flagsSet
+import com.mixfa.naggr.newsletter.service.NewsletterService
 import com.mixfa.naggr.telegramBot.model.TelegramNewsSubscriber
 import com.mixfa.naggr.utils.*
 import org.springframework.beans.factory.annotation.Value

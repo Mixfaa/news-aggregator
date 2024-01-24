@@ -1,6 +1,6 @@
-package com.mixfa.naggr.news.service
+package com.mixfa.naggr.newsletter.service
 
-import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.newsletter.model.News
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

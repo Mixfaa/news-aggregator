@@ -1,6 +1,6 @@
 package com.mixfa.naggr.telegramBot.service
 
-import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.newsletter.model.News
 import com.mixfa.naggr.telegramBot.model.TelegramNewsSubscriber
 import org.springframework.data.domain.Pageable
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository
