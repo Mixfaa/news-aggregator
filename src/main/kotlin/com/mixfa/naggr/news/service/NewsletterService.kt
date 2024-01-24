@@ -1,5 +1,6 @@
 package com.mixfa.naggr.news.service
 
+import com.mixfa.naggr.news.model.News
 import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -12,7 +13,7 @@ Service merges all reactive providers to one flux, and then receiver services su
 @Service
 class NewsletterService(
     newsProviders: List<ReactiveNewsProvider>,
-    newsExtenders: MutableList<NewsDataExtender>
+    private val newsExtenders: MutableList<NewsDataExtender>
 ) {
     private val logger = LoggerFactory.getLogger(this.javaClass)
 
@@ -24,19 +25,21 @@ class NewsletterService(
 
     val newsFlux = Flux
         .merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
-        .doOnNext { news ->
-            newsExtenders.forEach { extender ->
-                try {
-                    extender.extend(news)
-                } catch (ex: Exception) {
-                    logger.error(ex.message)
-                    logger.info("Extender $extender will not be called anymore")
+        .doOnNext { news -> executeExtenders(news) }
+        .share()
 
-                    newsExtenders.remove(extender)
-                }
+    private fun executeExtenders(news: News) {
+        newsExtenders.forEach { extender ->
+            try {
+                extender.extend(news)
+            } catch (ex: Exception) {
+                logger.error(ex.message)
+                logger.info("Extender $extender will not be executed anymore")
+
+                newsExtenders.remove(extender)
             }
         }
-        .share()
+    }
 
     @Scheduled(fixedRate = 1000 * 60 * 60)
     private fun keepAlive() {
