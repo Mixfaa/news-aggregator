@@ -2,6 +2,9 @@ package com.mixfa.naggr
 
 import com.theokanning.openai.client.OpenAiApi
 import com.theokanning.openai.service.OpenAiService
+import net.dv8tion.jda.api.JDA
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.entities.Activity
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
@@ -24,6 +27,14 @@ class NaggrApplication {
     @Bean
     fun telegramBotsApi(@Value("\${telegrambot.token}") token: String): TelegramBotsApi {
         return TelegramBotsApi(DefaultBotSession::class.java)
+    }
+
+    @Bean
+    fun discordBot(@Value("\${discordbot.token}") token: String): JDA {
+        val builder = JDABuilder.createDefault(token)
+        builder.setActivity(Activity.customStatus("следит за новастями"))
+
+        return builder.build()
     }
 
     @Bean

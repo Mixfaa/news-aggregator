@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono
 @Repository
 interface TelegramSubscribersRepository : ReactiveMongoRepository<TelegramNewsSubscriber, String> {
     fun findByChatId(chatId: Long): Mono<TelegramNewsSubscriber>
-    fun findAllByTargetFlagsContaining(flags: List<News.Flag>, page: Pageable): Flux<TelegramNewsSubscriber>
+    fun findAllByTargetFlagsContaining(flags: Iterable<News.Flag>, page: Pageable): Flux<TelegramNewsSubscriber>
     fun deleteByChatId(chatId: Long): Mono<Void>
     fun existsByChatId(chatId: Long): Mono<Boolean>
 }

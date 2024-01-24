@@ -30,7 +30,7 @@ private fun writePrompt(news: News): String {
 
         If there is not enough information for you, you answer must be "Not enough info"
      
-        Only number from you or "Not enough info" expected
+        Only number or "Not enough info" expected
 
         News message: 
         Title: ${news.title}

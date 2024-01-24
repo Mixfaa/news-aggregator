@@ -8,8 +8,9 @@ import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
 
 /**
-Service merges all reactive providers to one flux, and then receiver services subscribe to it
- */
+ *
+ * Service merges all reactive providers to one flux, and then receiver services subscribe to it
+ * */
 @Service
 class NewsletterService(
     newsProviders: List<ReactiveNewsProvider>,
@@ -29,7 +30,7 @@ class NewsletterService(
         .share()
 
     private fun executeExtenders(news: News) {
-        newsExtenders.forEach { extender ->
+        for (extender in newsExtenders) {
             try {
                 extender.extend(news)
             } catch (ex: Exception) {

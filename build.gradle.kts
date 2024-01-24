@@ -29,7 +29,7 @@ dependencies {
 	implementation("com.theokanning.openai-gpt3-java:service:0.16.0")
 	implementation("com.squareup.retrofit2:converter-jackson:2.9.0")
 
-	implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0")
+	implementation("net.dv8tion:JDA:5.0.0-beta.19")
 }
 
 tasks.withType<KotlinCompile> {

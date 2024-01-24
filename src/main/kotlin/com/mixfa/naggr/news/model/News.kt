@@ -23,3 +23,9 @@ data class News(
         }
     }
 }
+
+fun Iterable<News>.flagsSet(): Set<News.Flag> {
+    val allFlags = HashSet<News.Flag>(News.Flag.entries.size)
+    this.forEach { allFlags.addAll(it.flags) }
+    return allFlags
+}

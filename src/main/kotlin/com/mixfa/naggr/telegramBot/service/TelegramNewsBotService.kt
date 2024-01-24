@@ -1,11 +1,11 @@
 package com.mixfa.naggr.telegramBot.service
 
 import com.mixfa.naggr.news.model.News
+import com.mixfa.naggr.news.model.flagsSet
 import com.mixfa.naggr.news.service.NewsletterService
 import com.mixfa.naggr.telegramBot.model.TelegramNewsSubscriber
 import com.mixfa.naggr.utils.*
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.TelegramBotsApi
@@ -169,8 +169,7 @@ final class TelegramNewsBotService(
     }
 
     private fun handleNews(newsList: List<News>) {
-        val allFlags = ArrayList<News.Flag>(News.Flag.entries.size)
-        newsList.forEach { allFlags.addAll(it.flags) }
+        val allFlags = newsList.flagsSet()
 
         val newsMessages = newsList
             .map { newsEl ->
@@ -181,7 +180,7 @@ final class TelegramNewsBotService(
             }
 
         newsSubscribersRepository
-            .findAllByTargetFlagsContaining(allFlags, defaultPage)
+            .findAllByTargetFlagsContaining(allFlags, defaultPageable)
             .onErrorContinue { throwable, obj ->
                 println(throwable.localizedMessage)
                 println(obj)
@@ -211,8 +210,6 @@ final class TelegramNewsBotService(
         inputHandlers.handle(update)
     }
 
-    companion object {
-        val defaultPage = Pageable.ofSize(10)
-    }
+
 }
 
