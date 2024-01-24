@@ -7,17 +7,11 @@ data class News(
     val additionalInfo: MutableMap<String, String>,
     val flags: List<Flag>
 ) {
-    val caption: String by lazy {
-        buildString {
-            appendLine(title)
-            additionalInfo
-                .filterKeys { it.startsWith("key") }
-                .forEach { (key, value) ->
-                    append('*')
-                    appendLine(value)
-                }
-            appendLine(link)
-        }
+    val textForTelegram: String by lazy {
+        """
+             $link
+             ${additionalInfo["ai_forecast"] ?: ""}
+           """.trimIndent()
     }
 
     enum class Flag {

@@ -175,7 +175,7 @@ final class TelegramNewsBotService(
         val newsMessages = newsList
             .map { newsEl ->
                 newsEl to SendMessage.builder()
-                    .text(newsEl.writeForTelegram())
+                    .text(newsEl.textForTelegram)
                     .chatId(0)
                     .build()
             }

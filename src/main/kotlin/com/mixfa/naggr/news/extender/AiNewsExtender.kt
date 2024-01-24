@@ -34,7 +34,6 @@ private fun writePrompt(news: News): String {
 
         News message: 
         Title: ${news.title}
-        Caption: ${news.caption}
         Additional info:
         ${news.additionalInfo.values.joinToString("\n")}
     """.trimIndent()
