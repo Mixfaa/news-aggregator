@@ -26,7 +26,7 @@ class NewsletterService(
 
     val newsFlux = Flux
         .merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
-        .doOnNext { news -> executeExtenders(news) }
+        .doOnNext(::executeExtenders)
         .share()
 
     private fun executeExtenders(news: News) {
