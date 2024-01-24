@@ -28,7 +28,7 @@ private object DiscordEventPredicates {
 final class DiscordNewsBotService(
     private val discordBot: JDA,
     private val discordSubscribersRepository: DiscordSubscribersRepository,
-    private val newsletterService: NewsletterService
+    newsletterService: NewsletterService
 ) : ListenerAdapter() {
     private val commandHandlers: List<InputHandler<SlashCommandInteractionEvent, Unit>>
 
