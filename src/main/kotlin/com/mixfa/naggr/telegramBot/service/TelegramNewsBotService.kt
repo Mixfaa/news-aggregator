@@ -119,7 +119,7 @@ final class TelegramNewsBotService(
                 if (!exists)
                     newsSubscribersRepository.save(TelegramNewsSubscriber(chatId = chatId)).subscribe()
                 executeAsync(SendMessage(chatId.toString(), "Added to newsletter list"))
-                    .exceptionally { error ->
+                    .exceptionally { _ ->
                         removeFromNewsletterByChatId(chatId)
                         null
                     }

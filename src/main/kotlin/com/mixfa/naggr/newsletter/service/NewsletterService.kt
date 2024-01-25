@@ -8,12 +8,11 @@ import reactor.core.publisher.Flux
 import reactor.core.scheduler.Schedulers
 
 /**
- *
  * Service merges all reactive providers to one flux, and then receiver services subscribe to it
  * */
 @Service
 class NewsletterService(
-    newsProviders: List<ReactiveNewsProvider>,
+    newsProviders: List<NewsProvider>,
     private val newsExtenders: MutableList<NewsDataExtender>
 ) {
     private val logger = LoggerFactory.getLogger(this.javaClass)

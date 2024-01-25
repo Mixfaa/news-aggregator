@@ -1,26 +1,17 @@
-package com.mixfa.naggr.newsletter.providers
+package com.mixfa.naggr.newsletter.providers.parsers
 
 import com.mixfa.naggr.newsletter.model.News
-import com.mixfa.naggr.newsletter.service.ReactiveNewsProvider
+import com.mixfa.naggr.newsletter.service.ParsingNewsProvider
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
-import reactor.core.publisher.Flux
-import java.time.Duration
 
 
 @Component
-class InvestingComParser : ReactiveNewsProvider {
+class InvestingComParser : ParsingNewsProvider {
     private var lastParsedNews: News? = null
 
-    override val newsFlux: Flux<News> = Flux.create {
-        while (!it.isCancelled) {
-            val news = parseNews()
-            if (news != null) it.next(news)
-            Thread.sleep(Duration.ofMinutes(5))
-        }
-    }
 
-    fun parseNews(): News? {
+    override fun parseNews(): News? {
         return try {
             val document = Jsoup.connect("https://ru.investing.com/news/cryptocurrency-news").get() ?: return null
 
