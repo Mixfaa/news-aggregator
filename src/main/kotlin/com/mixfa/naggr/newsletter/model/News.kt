@@ -19,7 +19,7 @@ data class News(
         FINANCE;
 
         companion object {
-            val flagsList = Flag.entries.joinToString(separator = "\n")
+            val FLAGS_STRING = Flag.entries.joinToString(separator = "\n")
         }
     }
 }

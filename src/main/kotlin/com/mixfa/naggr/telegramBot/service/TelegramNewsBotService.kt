@@ -78,7 +78,7 @@ final class TelegramNewsBotService(
                 BotCommand("start", "Start receiving newsletter"),
                 BotCommand(
                     "set_flags",
-                    "set news tags you want to receive, available tags are: ${News.Flag.flagsList}"
+                    "set news tags you want to receive, available tags are: ${News.Flag.FLAGS_STRING}"
                 ),
             ), BotCommandScopeAllChatAdministrators(), null
         )
