@@ -1,4 +1,4 @@
-package com.mixfa.naggr.newsletter.providers.parsers
+package com.mixfa.naggr.newsletter.provider.parser
 
 import com.mixfa.naggr.newsletter.model.News
 import com.mixfa.naggr.newsletter.service.ParsingNewsProvider
@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component
 @Component
 class InvestingComParser : ParsingNewsProvider {
     private var lastParsedNews: News? = null
-
 
     override fun parseNews(): News? {
         return try {

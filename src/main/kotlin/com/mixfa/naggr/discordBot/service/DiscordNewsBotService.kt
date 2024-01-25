@@ -4,14 +4,15 @@ import com.mixfa.naggr.discordBot.model.DiscordNewsSubscriber
 import com.mixfa.naggr.newsletter.model.News
 import com.mixfa.naggr.newsletter.model.flagsSet
 import com.mixfa.naggr.newsletter.service.NewsletterService
-import com.mixfa.naggr.utils.*
+import com.mixfa.naggr.utils.LambdaInputHandler
+import com.mixfa.naggr.utils.defaultPageable
+import com.mixfa.naggr.utils.handle
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import net.dv8tion.jda.api.interactions.commands.build.Commands
 import org.springframework.stereotype.Service
-import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.time.Duration
 
@@ -30,7 +31,9 @@ final class DiscordNewsBotService(
     private val discordSubscribersRepository: DiscordSubscribersRepository,
     newsletterService: NewsletterService
 ) : ListenerAdapter() {
-    private val commandHandlers: List<InputHandler<SlashCommandInteractionEvent, Unit>>
+    private val commandHandlers = listOf(
+        LambdaInputHandler(DiscordEventPredicates.byFullCommandName("receive_news"), this::handleReceiveNewsCmd)
+    )
 
     init {
         discordBot.updateCommands()
@@ -41,10 +44,6 @@ final class DiscordNewsBotService(
             .queue()
 
         discordBot.addEventListener(this)
-
-        commandHandlers = listOf(
-            LambdaInputHandler(DiscordEventPredicates.byFullCommandName("receive_news"), this::handleReceiveNewsCmd)
-        )
 
         newsletterService.newsFlux
             .bufferTimeout(3, Duration.ofMinutes(5))
@@ -79,22 +78,21 @@ final class DiscordNewsBotService(
 
     private fun handleReceiveNewsCmd(event: SlashCommandInteractionEvent) {
         event.deferReply().queue()
-        discordSubscribersRepository.findByChannelId(event.channelIdLong)
-            .publishOn(Schedulers.boundedElastic())
-            .switchIfEmpty(Mono.error(EmptyMonoError))
-            .onErrorComplete { error ->
-                discordSubscribersRepository.save(
-                    DiscordNewsSubscriber(
-                        channelId = event.channelIdLong,
-                        targetFlags = News.Flag.entries
-                    )
-                ).subscribe()
-                event.hook.sendMessage("Subscribed to news").queue()
-                error == EmptyMonoError
-            }
-            .subscribe {
-                discordSubscribersRepository.delete(it).subscribe()
-                event.hook.sendMessage("Unsubscribed from news").queue()
+        discordSubscribersRepository
+            .existsByChannelId(event.channelIdLong)
+            .subscribe { exists ->
+                if (exists) {
+                    discordSubscribersRepository.deleteByChannelId(event.channelIdLong).subscribe()
+                    event.hook.sendMessage("Unsubscribed from news").queue()
+                } else {
+                    discordSubscribersRepository.save(
+                        DiscordNewsSubscriber(
+                            channelId = event.channelIdLong,
+                            targetFlags = News.Flag.entries
+                        )
+                    ).subscribe()
+                    event.hook.sendMessage("Subscribed to news").queue()
+                }
             }
     }
 

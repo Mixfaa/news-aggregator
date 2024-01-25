@@ -15,4 +15,6 @@ interface DiscordSubscribersRepository : ReactiveMongoRepository<DiscordNewsSubs
         flags: Iterable<News.Flag>,
         page: Pageable
     ): Flux<DiscordNewsSubscriber>
+    fun existsByChannelId(channelId: Long) : Mono<Boolean>
+    fun deleteByChannelId(channelId: Long) : Mono<Boolean>
 }

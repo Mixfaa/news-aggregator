@@ -8,21 +8,6 @@ import com.theokanning.openai.service.OpenAiService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 
-//private fun writePrompt(news: News): String {
-//    return """
-//        Analyze news message below and give your opinion as you are professional financial analytic
-//
-//        If there is not enough information for you, you answer must contain "Not enough info"
-//        If you can say at least positive it or not, you answer must not contain "Not enough info"
-//
-//        News message:
-//        Title: ${news.title}
-//        Caption: ${news.caption}
-//        Additional info:
-//        ${news.additionalInfo.values.joinToString("\n")}
-//    """.trimIndent()
-//}
-
 private fun writePrompt(news: News): String {
     return """
         Analyze news message below as you are professional financial analytic and give 
@@ -46,18 +31,14 @@ private fun writePrompt(news: News): String {
 class AiNewsExtender(
     private val aiService: OpenAiService
 ) : NewsDataExtender {
-    private val targetFlags = listOf(News.Flag.CRYPTO, News.Flag.FINANCE)
-    private val maxTokens = 16385
     private val logger = LoggerFactory.getLogger(AiNewsExtender::class.java)
 
-    private val numberRegex = "-?\\d+(?:\\.\\d+)?".toRegex()
-
     override fun extend(news: News) {
-        if (targetFlags.none { it in news.flags }) return
+        if (news.flags.none { it in TARGET_FLAGS }) return
 
         val prompt = writePrompt(news)
 
-        if (prompt.length >= maxTokens) return
+        if (prompt.length >= MAX_TOKENS) return
 
         val chatRequest = ChatCompletionRequest.builder()
             .messages(listOf(ChatMessage("user", prompt)))
@@ -79,5 +60,11 @@ class AiNewsExtender(
         val forecast = numberRegex.find(response)?.groupValues?.firstOrNull() ?: return
 
         news.additionalInfo["ai_forecast"] = "Ai forecast: $forecast"
+    }
+
+    companion object {
+        private val TARGET_FLAGS = listOf(News.Flag.CRYPTO, News.Flag.FINANCE)
+        private const val MAX_TOKENS = 16385
+        private val numberRegex = "-?\\d+(?:\\.\\d+)?".toRegex()
     }
 }

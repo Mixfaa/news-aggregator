@@ -1,4 +1,4 @@
-package com.mixfa.naggr.newsletter.providers.parsers
+package com.mixfa.naggr.newsletter.provider.parser
 
 
 import com.mixfa.naggr.newsletter.model.News

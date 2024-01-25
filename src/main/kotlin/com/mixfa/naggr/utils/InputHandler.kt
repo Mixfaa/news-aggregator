@@ -1,5 +1,7 @@
 package com.mixfa.naggr.utils
 
+val noHandlerFoundError = Throwable("No input handler hound")
+
 interface InputHandler<T, R> {
     fun test(input: T): Boolean
     fun handle(input: T): R
@@ -36,6 +38,6 @@ fun <T, R> Iterable<InputHandler<T, R>>.handle(upd: T): Result<R> {
             }
         }
     }
-    return Result.failure(Throwable("No handler found"))
+    return Result.failure(noHandlerFoundError)
 }
 

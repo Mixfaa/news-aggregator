@@ -147,10 +147,10 @@ final class TelegramNewsBotService(
 
         newsSubscribersRepository
             .findByChatId(chatId)
-            .switchIfEmpty(Mono.error(EmptyMonoError))
+            .switchIfEmpty(Mono.error(emptyMonoError))
             .onErrorComplete { error ->
                 executeAsync(SendMessage(chatId.toString(), "Your chat is not in newsletter yet"))
-                error == EmptyMonoError
+                error == emptyMonoError
             }.subscribe {
                 val newFlags = args.mapNotNull { arg ->
                     try {
