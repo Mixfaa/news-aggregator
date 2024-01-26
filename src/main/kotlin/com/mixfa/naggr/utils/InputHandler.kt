@@ -31,7 +31,7 @@ fun <T, R> Iterable<InputHandler<T, R>>.handle(upd: T): Result<R> {
     for (handler in this) {
         if (handler.test(upd)) {
             try {
-                return Result.success(handler.handle(upd))
+                return Result.success(handler.handle(upd)
             } catch (ex: Throwable) {
                 handler.handleError(ex)
                 return Result.failure(ex)

@@ -24,6 +24,7 @@ import java.time.Duration
 @EnableReactiveMongoRepositories
 @Configuration
 class NaggrApplication {
+
     @Bean
     fun telegramBotsApi(@Value("\${telegrambot.token}") token: String): TelegramBotsApi {
         return TelegramBotsApi(DefaultBotSession::class.java)
@@ -31,10 +32,7 @@ class NaggrApplication {
 
     @Bean
     fun discordBot(@Value("\${discordbot.token}") token: String): JDA {
-        val builder = JDABuilder.createDefault(token)
-        builder.setActivity(Activity.customStatus("следит за новастями"))
-
-        return builder.build()
+        return JDABuilder.createDefault(token).build()
     }
 
     @Bean

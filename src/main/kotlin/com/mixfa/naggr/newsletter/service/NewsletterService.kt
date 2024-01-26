@@ -15,14 +15,6 @@ class NewsletterService(
     newsProviders: List<NewsProvider>,
     private val newsExtenders: MutableList<NewsDataExtender>
 ) {
-    private val logger = LoggerFactory.getLogger(this.javaClass)
-
-    init {
-        newsProviders.forEach {
-            logger.info("New news provider: ${it.javaClass}")
-        }
-    }
-
     val newsFlux = Flux
         .merge(newsProviders.map { it.newsFlux.subscribeOn(Schedulers.boundedElastic()) })
         .doOnNext(::executeExtenders)
@@ -43,5 +35,9 @@ class NewsletterService(
 
     @Scheduled(fixedRate = 1000 * 60 * 60)
     private fun keepAlive() {
+    }
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(this::class.java)
     }
 }
