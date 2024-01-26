@@ -31,8 +31,6 @@ private fun writePrompt(news: News): String {
 class AiNewsExtender(
     private val aiService: OpenAiService
 ) : NewsDataExtender {
-    private val logger = LoggerFactory.getLogger(AiNewsExtender::class.java)
-
     override fun extend(news: News) {
         if (news.flags.none { it in TARGET_FLAGS }) return
 
@@ -66,5 +64,7 @@ class AiNewsExtender(
         private val TARGET_FLAGS = listOf(News.Flag.CRYPTO, News.Flag.FINANCE)
         private const val MAX_TOKENS = 16385
         private val numberRegex = "-?\\d+(?:\\.\\d+)?".toRegex()
+
+        private val logger = LoggerFactory.getLogger(AiNewsExtender::class.java)
     }
 }
