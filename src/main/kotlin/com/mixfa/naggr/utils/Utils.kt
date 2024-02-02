@@ -1,8 +1,8 @@
 package com.mixfa.naggr.utils
 
 import org.springframework.data.domain.Pageable
-import reactor.core.publisher.Mono
 
 val defaultPageable = Pageable.ofSize(10)
 
-val emptyMonoError = Throwable("No element")
+class EmptyMonoException(message:String) : Throwable(message)
+val EMPTY_MONO_EXCEPTION = EmptyMonoException("Mono produced 0 elements")

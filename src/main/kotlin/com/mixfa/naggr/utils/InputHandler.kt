@@ -1,11 +1,14 @@
 package com.mixfa.naggr.utils
 
-val noHandlerFoundError = Throwable("No input handler hound")
 
 interface InputHandler<T, R> {
     fun test(input: T): Boolean
     fun handle(input: T): R
     fun handleError(throwable: Throwable)
+
+    companion object {
+        val noHandlerFoundException = NoSuchElementException("No input handler hound")
+    }
 }
 
 open class LambdaInputHandler<T, R>(
@@ -38,6 +41,6 @@ fun <T, R> Iterable<InputHandler<T, R>>.handle(upd: T): Result<R> {
             }
         }
     }
-    return Result.failure(noHandlerFoundError)
+    return Result.failure(InputHandler.noHandlerFoundException)
 }
 
