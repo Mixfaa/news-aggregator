@@ -9,5 +9,5 @@ import org.springframework.data.mongodb.core.mapping.Document
 data class DiscordNewsSubscriber(
     @Id val id: ObjectId = ObjectId(),
     val channelId: Long,
-    val targetFlags: List<News.Flag>
+    var targetFlags: List<News.Flag> = News.Flag.entries
 )

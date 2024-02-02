@@ -9,6 +9,6 @@ import java.io.Serializable
 @Document("TelegramNewsSubscriber")
 data class TelegramNewsSubscriber(
     @Id val id: ObjectId = ObjectId(),
-    var chatId: Long,
+    val chatId: Long,
     var targetFlags: List<News.Flag> = News.Flag.entries,
 ) : Serializable
