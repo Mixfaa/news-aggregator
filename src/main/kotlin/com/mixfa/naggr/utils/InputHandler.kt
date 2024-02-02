@@ -7,7 +7,7 @@ interface InputHandler<T, R> {
     fun handleError(throwable: Throwable)
 
     companion object {
-        val noHandlerFoundException = NoSuchElementException("No input handler hound")
+        val NO_HANDLER_FOUND_EXCEPTION = NoSuchElementException("No input handler hound")
     }
 }
 
@@ -41,6 +41,6 @@ fun <T, R> Iterable<InputHandler<T, R>>.handle(upd: T): Result<R> {
             }
         }
     }
-    return Result.failure(InputHandler.noHandlerFoundException)
+    return Result.failure(InputHandler.NO_HANDLER_FOUND_EXCEPTION)
 }
 
